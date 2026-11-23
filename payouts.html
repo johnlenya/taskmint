@@ -119,10 +119,19 @@
 <script>
 (async () => {
   try {
-    const res = await fetch("/api/public/payouts", { cache: "no-store" });
-    if (!res.ok) return;
-    const data = await res.json();
-    if (!data || typeof data.totalUsd !== "number") return;
+    let data = null;
+    for (const base of ["", "/functions/v1/app"]) {
+      try {
+        const res = await fetch(base + "/api/public/payouts", { cache: "no-store" });
+        if (!res.ok) continue;
+        const body = await res.json();
+        if (body && typeof body.totalUsd === "number") { data = body; break; }
+      } catch (err) {
+        /* try the next candidate */
+      }
+    }
+    if (!data) return;
+    const sandbox = data.simulated === true;
     const total = document.querySelector("[data-live-total]");
     const members = document.querySelector("[data-live-members]");
     const note = document.querySelector("[data-live-note]");
@@ -132,16 +141,20 @@
     if (total) total.textContent = money(data.totalUsd);
     if (members) members.textContent = String(data.members);
     if (note) {
-      note.textContent = data.pendingUsd > 0
-        ? money(data.pendingUsd) + " queued for the next weekly run"
-        : "live from this deployment";
+      if (sandbox) note.textContent = "sandbox totals · no money moves";
+      else if (data.pendingUsd > 0) note.textContent = money(data.pendingUsd) + " queued for the next weekly run";
+      else note.textContent = "live from this deployment";
     }
     if (membersNote) {
       membersNote.textContent = data.members === 0 && data.pendingMembers > 0
         ? data.pendingMembers + " awaiting first payout. Lifetime, one payout min."
         : "lifetime, one payout min.";
     }
-    if (caption) caption.textContent = "live totals from this deployment · paid = completed weekly runs; new requests queue until then";
+    if (caption) {
+      caption.textContent = sandbox
+        ? "sandbox ledger · offers are simulated and payouts are marked complete by hand for testing"
+        : "live totals from this deployment · paid = completed weekly runs; new requests queue until then";
+    }
   } catch (err) {
     /* static demo deployment — keep illustrative figures */
   }

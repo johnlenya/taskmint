@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: taskmint
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: SIMULATE_PARTNER
+        value: "1"
+      - key: PORTAL_SECRET
+        generateValue: true
+      - key: OFFERWALL_SECRET
+        generateValue: true
+      - key: ADMIN_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false

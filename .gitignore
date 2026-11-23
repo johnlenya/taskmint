@@ -1,3 +1,7 @@
 server/data/
 *.log
 __shots/
+web/
+dev/server.log
+node_modules/
+.TaskMint.qoder.site

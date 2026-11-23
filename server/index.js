@@ -25,6 +25,7 @@ const DATA_DIR = path.join(__dirname, "data");
 const DB_FILE = path.join(DATA_DIR, "db.json");
 
 const PORT = Number(process.env.PORT || 8080);
+const DATABASE_URL = process.env.DATABASE_URL || "";
 const SECRET = process.env.PORTAL_SECRET || "dev-only-portal-secret";
 const PARTNER_SECRET = process.env.OFFERWALL_SECRET || "dev-only-offerwall-secret";
 const SIMULATE = process.env.SIMULATE_PARTNER !== "0";
@@ -47,7 +48,8 @@ const OFFERS = {
 
 /* ---------------- storage ---------------- */
 
-fs.mkdirSync(DATA_DIR, { recursive: true });
+let db = { users: {}, creditedTx: [] };
+let pool = null;
 
 function dbRead() {
   try {
@@ -57,18 +59,83 @@ function dbRead() {
   }
 }
 
-const db = dbRead();
+async function initStorage() {
+  if (!DATABASE_URL) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    db = dbRead();
+    return;
+  }
+  const { default: pg } = await import("pg");
+  pool = new pg.Pool({ connectionString: DATABASE_URL, ssl: true, max: 2 });
+  await pool.query(
+    "CREATE TABLE IF NOT EXISTS taskmint_state (id integer PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now())"
+  );
+  const found = await pool.query("SELECT data FROM taskmint_state WHERE id = 1");
+  if (found.rowCount) {
+    db = found.rows[0].data;
+  } else {
+    await pool.query(
+      "INSERT INTO taskmint_state (id, data) VALUES (1, $1::jsonb) ON CONFLICT (id) DO NOTHING",
+      [JSON.stringify(db)]
+    );
+  }
+}
 
 let writeTimer = null;
+let writing = false;
+let dirty = false;
+
 function dbFlush() {
   if (writeTimer) return;
   writeTimer = setTimeout(() => {
     writeTimer = null;
-    const tmp = DB_FILE + ".tmp";
-    fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
-    fs.renameSync(tmp, DB_FILE);
+    if (pool) void persistPg();
+    else {
+      const tmp = DB_FILE + ".tmp";
+      fs.writeFileSync(tmp, JSON.stringify(db, null, 2));
+      fs.renameSync(tmp, DB_FILE);
+    }
   }, 150);
 }
+
+async function persistPg() {
+  if (writing) {
+    dirty = true;
+    return;
+  }
+  writing = true;
+  try {
+    do {
+      dirty = false;
+      await pool.query(
+        "UPDATE taskmint_state SET data = $1::jsonb, updated_at = now() WHERE id = 1",
+        [JSON.stringify(db)]
+      );
+    } while (dirty);
+  } catch (err) {
+    console.error("ledger persist failed:", err.message);
+  } finally {
+    writing = false;
+  }
+}
+
+async function shutdown() {
+  clearTimeout(writeTimer);
+  writeTimer = null;
+  try {
+    if (pool) {
+      await persistPg();
+      await pool.end();
+    } else {
+      fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+    }
+  } catch (err) {
+    console.error("shutdown flush failed:", err.message);
+  }
+  process.exit(0);
+}
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
 
 /* ---------------- helpers ---------------- */
 
@@ -170,12 +237,11 @@ const MIME = {
 function serveStatic(req, res, pathname) {
   const rel = pathname === "/" ? "index.html" : pathname.replace(/^\/+/, "");
   const file = path.resolve(SITE_DIR, rel);
-  if (!file.startsWith(SITE_DIR)) {
-    res.writeHead(403).end("forbidden");
-    return;
-  }
-  if (/server[\\/]|__/.test(path.relative(SITE_DIR, file))) {
-    res.writeHead(404).end("not found");
+  const publicFile =
+    /^[a-z0-9_-]+\.html$/.test(rel) ||
+    /^assets\/[a-z0-9_.-]+\.(css|js|png|svg|ico|webp)$/i.test(rel);
+  if (!file.startsWith(SITE_DIR + path.sep) || !publicFile) {
+    res.writeHead(404, { "content-type": "text/plain" }).end("not found");
     return;
   }
   fs.readFile(file, (err, data) => {
@@ -220,7 +286,12 @@ async function api(req, res, url) {
   const route = url.pathname;
 
   if (req.method === "GET" && route === "/api/health") {
-    return json(res, 200, { ok: true, simulated: SIMULATE, offers: Object.keys(OFFERS).length });
+    return json(res, 200, {
+      ok: true,
+      mode: SIMULATE ? "sandbox" : "live",
+      simulated: SIMULATE,
+      offers: Object.keys(OFFERS).length,
+    });
   }
 
   if (req.method === "POST" && route === "/api/signup") {
@@ -363,7 +434,15 @@ const server = http.createServer((req, res) => {
   serveStatic(req, res, url.pathname);
 });
 
-server.listen(PORT, () => {
-  console.log(`TaskMint on http://localhost:${PORT} · simulate=${SIMULATE} · offers=${Object.keys(OFFERS).length}`);
-  console.log(`Data file: ${DB_FILE}`);
+async function main() {
+  await initStorage();
+  server.listen(PORT, () => {
+    console.log(`TaskMint on port ${PORT} · simulate=${SIMULATE} · offers=${Object.keys(OFFERS).length}`);
+    console.log(pool ? "Storage: Postgres" : `Storage: ${DB_FILE}`);
+  });
+}
+
+main().catch((err) => {
+  console.error("startup failed:", err);
+  process.exit(1);
 });

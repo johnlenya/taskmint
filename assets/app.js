@@ -69,13 +69,15 @@ const TASKS = [
 let state = load();
 let activeFilter = "all";
 let MODE = "demo";
+let API_BASE = "";
+let SANDBOX = false;
 let pollTimer = null;
 
 /* ---------------- server mode ---------------- */
 
 async function api(path, body) {
   const token = localStorage.getItem("taskmint:token");
-  const res = await fetch(path, {
+  const res = await fetch(API_BASE + path, {
     method: body === undefined ? "GET" : "POST",
     headers: Object.assign(
       { "content-type": "application/json" },
@@ -261,7 +263,7 @@ function bindOnboard() {
         state = adaptServerState(res.state);
         modal.classList.remove("open");
         renderAll();
-        toast("Welcome, @" + raw + ". Your ledger is live.");
+        toast(SANDBOX ? "Welcome, @" + raw + ". Sandbox ledger ready — offers here are simulated." : "Welcome, @" + raw + ". Your ledger is live.");
       } catch (err) {
         toast(err.code === "handle_taken" ? "That handle is taken — try another." : "Could not create the account.", "error");
       }
@@ -436,7 +438,11 @@ async function withdraw(ev) {
       const { state: s } = await api("/api/withdraw", { usd: raw, method: method.value });
       state = adaptServerState(s);
       renderAll();
-      toast("Cash-out queued: " + usdFmt(raw) + " to " + method.value + ".");
+      toast(
+        SANDBOX
+          ? "Sandbox request recorded: " + usdFmt(raw) + " — no money is sent."
+          : "Cash-out queued: " + usdFmt(raw) + " to " + method.value + "."
+      );
     } catch (err) {
       if (err.code === "below_minimum") toast("Minimum cash-out is " + usdFmt(MIN_WITHDRAW_POINTS / POINTS_PER_USD) + ".", "error");
       else if (err.code === "insufficient_points") toast("Not enough points for that amount.", "error");
@@ -732,28 +738,49 @@ function showPanel(name) {
   window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
 }
 
-async function detectMode() {
-  try {
-    const res = await fetch("/api/health", { cache: "no-store" });
-    if (!res.ok) return "demo";
-    const body = await res.json();
-    return body && body.ok ? "server" : "demo";
-  } catch (err) {
-    return "demo";
+// Backend lives at the deployment root on a Node host and under the Sites
+// Function prefix on Qoder hosting; probe both and keep whichever answers.
+async function detectBackend() {
+  for (const base of ["", "/functions/v1/app"]) {
+    try {
+      const res = await fetch(base + "/api/health", { cache: "no-store" });
+      if (!res.ok) continue;
+      const body = await res.json();
+      if (body && body.ok) {
+        API_BASE = base;
+        return body;
+      }
+    } catch (err) {
+      /* try the next candidate */
+    }
   }
+  return null;
 }
 
-function setServerChrome() {
+function setServerChrome(health) {
+  const sandbox = health && health.mode === "sandbox";
   const pill = document.querySelector(".topbar > .pill");
-  if (pill) pill.textContent = "Live ledger";
+  if (pill) pill.textContent = sandbox ? "Sandbox ledger" : "Live ledger";
   const note = document.getElementById("modeNote");
-  if (note) note.textContent = "Balances are stored on the server. Payouts are queued for the weekly run.";
+  if (note) {
+    note.textContent = sandbox
+      ? "Balances are stored on the server. Sandbox: offers settle from simulated partner confirmation and cash-outs are not paid."
+      : "Balances are stored on the server. Payouts are queued for the weekly run.";
+  }
   const sim = document.getElementById("simulateReferral");
   if (sim) sim.style.display = "none";
   const payoutNote = document.getElementById("payoutNote");
-  if (payoutNote) payoutNote.textContent = "Points are debited immediately; payouts are sent manually after the weekly run.";
+  if (payoutNote) {
+    payoutNote.textContent = sandbox
+      ? "Sandbox: requests are recorded and points are debited, but no money is sent."
+      : "Points are debited immediately; payouts are sent manually after the weekly run.";
+  }
   const onboardNote = document.getElementById("onboardNote");
-  if (onboardNote) onboardNote.textContent = "Your handle and balance are stored on this deployment. No email or payment details needed yet.";
+  if (onboardNote) {
+    onboardNote.textContent = sandbox
+      ? "This sandbox stores your handle and balance on the server. Offers are simulated — nothing here pays cash."
+      : "Your handle and balance are stored on this deployment. No email or payment details needed yet.";
+  }
   const reset = document.getElementById("resetDemo");
   if (reset) reset.textContent = "Sign out";
 }
@@ -827,10 +854,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const startPanel = (location.hash || "#dashboard").slice(1);
   showPanel(["dashboard", "tasks", "referrals", "wallet"].includes(startPanel) ? startPanel : "dashboard");
 
-  MODE = await detectMode();
+  const health = await detectBackend();
+  MODE = health ? "server" : "demo";
+  SANDBOX = MODE === "server" && health.mode === "sandbox";
 
   if (MODE === "server") {
-    setServerChrome();
+    setServerChrome(health);
     if (localStorage.getItem("taskmint:token")) {
       try {
         await refreshFromServer();
