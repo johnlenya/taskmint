@@ -4,6 +4,10 @@ A rewards site where members earn points for completing offerwall surveys and
 signups, then cash out to PayPal or bank. Built as a static front end plus a
 zero-dependency Node backend that keeps the ledger authoritative.
 
+Live demo: <https://johnlenya.github.io/taskmint/>. GitHub Pages is static, so
+the deployed copy runs in demo mode with `localStorage` balances. The ledger
+backend below must be hosted separately for real earning.
+
 The design goal was the opposite of the sites this was modelled on: no
 referral-funded payouts, no crypto-only withdrawals, no single operator-decided
 "payout day", and a public ledger that is generated from the database rather
