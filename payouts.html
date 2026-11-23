@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Public payout ledger · TaskMint</title>
+<meta name="description" content="TaskMint's public payout history: monthly totals paid, members paid, median payout time and rejection rate.">
+<meta name="theme-color" content="#070c14">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">◆</span>TaskMint</a>
+    <div class="nav-links">
+      <a href="index.html#how">How it works</a>
+      <a href="index.html#earnings">Earnings</a>
+      <a href="index.html#how-we-earn">How we earn</a>
+      <a href="payouts.html" aria-current="page">Payout ledger</a>
+    </div>
+    <div class="nav-actions">
+      <a class="btn btn-primary btn-sm" href="app.html">Start earning</a>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap" style="padding-top:52px;padding-bottom:40px">
+
+  <div class="section-head">
+    <div class="eyebrow">Public record</div>
+    <h1 style="font-size:clamp(28px,3.4vw,42px);margin:10px 0 12px">Payout ledger</h1>
+    <p class="muted" style="max-width:62ch">Monthly cash-out totals, how many members were paid, and how long requests took. We publish the small months too — a rewards site that only shows its best month is hiding something.</p>
+  </div>
+
+  <div class="grid-4" style="margin-bottom:22px">
+    <div class="stat-tile"><div class="k">Paid to date</div><div class="v" data-live-total>$96,180</div><div class="s" data-live-note>demo figures</div></div>
+    <div class="stat-tile"><div class="k">Members paid</div><div class="v" data-live-members>2,184</div><div class="s" data-live-members-note>lifetime, one payout min.</div></div>
+    <div class="stat-tile"><div class="k">Median payout time</div><div class="v">31 h</div><div class="s">request → money received</div></div>
+    <div class="stat-tile"><div class="k">Average payout</div><div class="v">$44.04</div><div class="s">across all runs</div></div>
+  </div>
+
+  <div class="card table-scroll">
+    <table class="table">
+      <caption class="tiny muted" style="text-align:left;padding:0 0 10px">Monthly payout runs · <span data-live-caption>demo data for layout review, not real money</span></caption>
+      <thead>
+        <tr>
+          <th scope="col">Month</th>
+          <th scope="col" class="num">Members paid</th>
+          <th scope="col" class="num">Total paid</th>
+          <th scope="col" class="num">Median time</th>
+          <th scope="col" class="num">Rejected</th>
+          <th scope="col" class="num">Min payout</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Oct 2026</td><td class="num">412</td><td class="num">$18,420</td><td class="num">31 h</td><td class="num">0.7%</td><td class="num">$5.00</td></tr>
+        <tr><td>Sep 2026</td><td class="num">389</td><td class="num">$17,105</td><td class="num">34 h</td><td class="num">0.9%</td><td class="num">$5.00</td></tr>
+        <tr><td>Aug 2026</td><td class="num">355</td><td class="num">$15,880</td><td class="num">29 h</td><td class="num">1.1%</td><td class="num">$5.00</td></tr>
+        <tr><td>Jul 2026</td><td class="num">341</td><td class="num">$14,940</td><td class="num">38 h</td><td class="num">0.8%</td><td class="num">$5.00</td></tr>
+        <tr><td>Jun 2026</td><td class="num">352</td><td class="num">$15,235</td><td class="num">26 h</td><td class="num">0.6%</td><td class="num">$5.00</td></tr>
+        <tr><td>May 2026</td><td class="num">335</td><td class="num">$14,600</td><td class="num">33 h</td><td class="num">1.0%</td><td class="num">$5.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="section" aria-label="Methodology">
+    <div class="section-head">
+      <div class="eyebrow">Methodology</div>
+      <h2>What each number means</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Members paid</h3>
+        <p>Unique accounts with at least one completed payout that month. Repeat payouts count once.</p>
+      </div>
+      <div class="card">
+        <h3>Median time</h3>
+        <p>Median hours between request and confirmed receipt, not our internal queue time. Averages hide outliers — median is the honest one.</p>
+      </div>
+      <div class="card">
+        <h3>Rejected</h3>
+        <p>Payouts cancelled for fraud checks or duplicate identities, as a share of requests. Every rejection comes with a written reason.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-label="Verification">
+    <div class="card" style="display:grid;gap:12px">
+      <h2 style="font-size:20px">How to verify a rewards site before joining</h2>
+      <div class="rule-list">
+        <div class="rule"><span class="tick">✓</span><span>Payout history with counts, not screenshots of single transfers.</span></div>
+        <div class="rule"><span class="tick">✓</span><span>A company entity, address and contact route that is not only Telegram.</span></div>
+        <div class="rule"><span class="tick">✓</span><span>Cash out to PayPal or bank — crypto-only payouts have no chargeback pressure.</span></div>
+        <div class="rule"><span class="tick">✓</span><span>No deposits, no "activation" fees, no VIP packages, no team commissions.</span></div>
+        <div class="rule"><span class="cross">✕</span><span>One payout date per month, decided by the operator, is a red flag — not a feature.</span></div>
+      </div>
+      <p class="tiny muted" style="margin-top:6px">This page is part of a prototype. Before launch these figures must be generated from the payouts database, not written into the page.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <a class="brand" href="index.html" style="font-size:15px"><span class="brand-mark" style="width:24px;height:24px;font-size:12px" aria-hidden="true">◆</span>TaskMint</a>
+      <p style="margin-top:10px;max-width:38ch">Prototype build — demo figures shown on this page.</p>
+    </div>
+    <div class="footer-links">
+      <a href="app.html">Dashboard</a>
+      <a href="index.html">Home</a>
+      <a href="legal.html">Terms &amp; privacy</a>
+      <a href="https://github.com/johnlenya/taskmint">Source</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(async () => {
+  try {
+    const res = await fetch("/api/public/payouts", { cache: "no-store" });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data || typeof data.totalUsd !== "number") return;
+    const total = document.querySelector("[data-live-total]");
+    const members = document.querySelector("[data-live-members]");
+    const note = document.querySelector("[data-live-note]");
+    const membersNote = document.querySelector("[data-live-members-note]");
+    const caption = document.querySelector("[data-live-caption]");
+    const money = (n) => "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2 });
+    if (total) total.textContent = money(data.totalUsd);
+    if (members) members.textContent = String(data.members);
+    if (note) {
+      note.textContent = data.pendingUsd > 0
+        ? money(data.pendingUsd) + " queued for the next weekly run"
+        : "live from this deployment";
+    }
+    if (membersNote) {
+      membersNote.textContent = data.members === 0 && data.pendingMembers > 0
+        ? data.pendingMembers + " awaiting first payout. Lifetime, one payout min."
+        : "lifetime, one payout min.";
+    }
+    if (caption) caption.textContent = "live totals from this deployment · paid = completed weekly runs; new requests queue until then";
+  } catch (err) {
+    /* static demo deployment — keep illustrative figures */
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard · TaskMint</title>
+<meta name="description" content="TaskMint — earn points for surveys and offers, cash out from $5. Transparent ledger, no deposits.">
+<meta name="theme-color" content="#070c14">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<div class="app-shell" id="appRoot">
+
+  <aside class="sidebar" aria-label="Main">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true">◆</span>
+      TaskMint
+    </a>
+    <button class="nav-item" data-panel="dashboard" aria-current="true"><span class="ico" aria-hidden="true">▤</span>Dashboard</button>
+    <button class="nav-item" data-panel="tasks" aria-current="false"><span class="ico" aria-hidden="true">✦</span>Earn</button>
+    <button class="nav-item" data-panel="referrals" aria-current="false"><span class="ico" aria-hidden="true">⇄</span>Referrals</button>
+    <button class="nav-item" data-panel="wallet" aria-current="false"><span class="ico" aria-hidden="true">◫</span>Wallet</button>
+    <div class="sidebar-foot">
+      <p id="modeNote">Prototype build — points are demo data and no money moves.</p>
+      <p style="margin-top:10px"><a href="index.html" style="color:var(--muted)">← Back to homepage</a></p>
+      <p style="margin-top:6px"><a href="payouts.html" style="color:var(--muted)">Public payout ledger</a></p>
+      <button class="btn btn-ghost btn-sm" id="resetDemo" style="margin-top:12px">Reset demo</button>
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <header class="topbar">
+      <h1 id="panelTitle">Dashboard</h1>
+      <span class="pill pill-amber pill-dot">Prototype · demo data</span>
+      <div class="balance-chip"><span class="dot" aria-hidden="true"></span><span data-balance>0</span> pts</div>
+      <div class="avatar" data-avatar aria-hidden="true">TM</div>
+    </header>
+
+    <div class="app-content">
+
+      <!-- Dashboard -->
+      <section class="panel active" id="panel-dashboard" aria-labelledby="panelTitle">
+        <div class="hero-panel">
+          <div class="grow">
+            <div class="eyebrow">Daily check-in</div>
+            <h2 style="font-size:22px;margin:8px 0 6px">Keep the streak alive</h2>
+            <p class="small muted" id="streakText">Start a streak — day 7 pays 250 pts.</p>
+            <div class="streak-dots" id="streakDots" aria-hidden="true"></div>
+            <p class="tiny muted" style="margin-top:10px">Day 7 bonus: <span id="cycleBonus">250</span> pts · resets after the seventh day.</p>
+          </div>
+          <div style="flex:0 0 264px;max-width:100%">
+            <div class="balance-label">Available balance</div>
+            <div class="balance-big"><span data-balance>0</span><span class="tiny muted" style="margin-left:6px">pts</span></div>
+            <div class="balance-usd" data-balance-usd>$0.00</div>
+            <div class="progress" role="progressbar" aria-label="Progress to cash-out" aria-valuemin="0" aria-valuemax="100"><span id="progressBar" style="width:0%"></span></div>
+            <p class="tiny muted" id="progressLabel"></p>
+            <button class="btn btn-primary btn-block" id="checkinBtn" style="margin-top:12px">Check in</button>
+          </div>
+        </div>
+
+        <div class="grid-3" id="payoutSummary"></div>
+
+        <div class="section-title">
+          <h2>Quick start</h2>
+          <a class="small" href="#tasks">See all offers →</a>
+        </div>
+        <div data-task-host data-limit="3" data-filter="all"></div>
+
+        <div class="section-title" style="margin-top:8px">
+          <h2>Activity</h2>
+          <span class="small">every point is logged</span>
+        </div>
+        <div class="card">
+          <div class="ledger" id="ledgerList"></div>
+        </div>
+      </section>
+
+      <!-- Earn -->
+      <section class="panel" id="panel-tasks" aria-label="Earn">
+        <div class="section-title">
+          <h2>Available offers</h2>
+          <div class="tabs" id="taskFilters" role="tablist" aria-label="Filter offers">
+            <button class="tab" data-filter="all" aria-selected="true" role="tab">All</button>
+            <button class="tab" data-filter="survey" aria-selected="false" role="tab">Surveys</button>
+            <button class="tab" data-filter="install" aria-selected="false" role="tab">Installs</button>
+            <button class="tab" data-filter="signup" aria-selected="false" role="tab">Signups</button>
+            <button class="tab" data-filter="sponsor" aria-selected="false" role="tab">Clips</button>
+          </div>
+        </div>
+        <div data-task-host data-filter="all"></div>
+
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:8px">How completion is verified</h3>
+          <p class="small">Surveys and offers are delivered by an offerwall partner (BitLabs, AdGem in this demo). The partner posts back to our server only when the advertiser confirms completion — usually within minutes, sometimes up to 24 hours. We never credit a task the partner hasn't confirmed.</p>
+          <p class="small" style="margin-top:10px">Reward rate: 65–70% of what the advertiser pays. <a href="index.html#how-we-earn" style="color:var(--mint)">See the exact split →</a></p>
+        </div>
+      </section>
+
+      <!-- Referrals -->
+      <section class="panel" id="panel-referrals" aria-label="Referrals">
+        <div class="card">
+          <div class="eyebrow">Your code</div>
+          <div class="code-box" style="margin:12px 0">
+            <code data-code>—————</code>
+            <button class="btn btn-sm btn-ghost" id="copyCode" style="margin-left:auto">Copy</button>
+          </div>
+          <p class="small muted">One level only. You earn a one-time 500 pt bonus when a friend completes their first offer — not for signing up, and no commission from their future earnings.</p>
+          <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+            <button class="btn btn-sm" id="simulateReferral">Demo: simulate a friend joining</button>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="stat-tile"><div class="k">Bonuses paid</div><div class="v" id="referralCount">0</div><div class="s">friends who completed an offer</div></div>
+          <div class="stat-tile"><div class="k">Referral earnings</div><div class="v" id="referralEarned">0 pts</div><div class="s">500 pts each, capped at 50 per account</div></div>
+          <div class="stat-tile"><div class="k">Cost to join</div><div class="v">$0</div><div class="s">no deposits, ever</div></div>
+        </div>
+
+        <div class="section-title"><h2>Your referrals</h2></div>
+        <div class="card"><div class="ledger" id="referralList"></div></div>
+
+        <div class="card">
+          <h3 style="font-size:15px;margin-bottom:10px">Referral rules</h3>
+          <div class="rule-list">
+            <div class="rule"><span class="tick">✓</span><span>Bonus triggers on the referee's first verified offer completion.</span></div>
+            <div class="rule"><span class="tick">✓</span><span>One account per person; duplicate devices and shared payment details are rejected.</span></div>
+            <div class="rule"><span class="tick">✓</span><span>Cap: 50 paid referrals per account, and bonuses are never the site's revenue source.</span></div>
+            <div class="rule"><span class="cross">✕</span><span>No multi-level commission, no "team" tiers, no payment to recruit.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Wallet -->
+      <section class="panel" id="panel-wallet" aria-label="Wallet">
+        <div class="grid-2">
+          <div class="card">
+            <div class="balance-label">Available to withdraw</div>
+            <div class="balance-big" id="availableUsd">$0.00</div>
+            <p class="tiny muted" id="minNote">Minimum $5.00 · 1,000 pts = $1</p>
+
+            <form id="withdrawForm" style="margin-top:18px;display:grid;gap:14px">
+              <div class="field">
+                <label for="withdrawUsd">Amount (USD)</label>
+                <input class="input" id="withdrawUsd" type="number" min="5" step="0.5" inputmode="decimal" placeholder="5.00" required>
+              </div>
+              <div class="field">
+                <label for="withdrawMethod">Payout method</label>
+                <select class="select" id="withdrawMethod">
+                  <option>PayPal</option>
+                  <option>Bank transfer</option>
+                </select>
+              </div>
+              <button class="btn btn-primary btn-block" type="submit">Request cash-out</button>
+            </form>
+            <p class="tiny muted" id="payoutNote" style="margin-top:12px">Prototype: requests are recorded and points are debited, but no payment is sent.</p>
+          </div>
+
+          <div class="card">
+            <h3 style="font-size:15px;margin-bottom:8px">Payout policy</h3>
+            <div class="rule-list">
+              <div class="rule"><span class="tick">✓</span><span>Runs weekly; most payouts land in 1–2 business days.</span></div>
+              <div class="rule"><span class="tick">✓</span><span>No withdrawal fee at any amount.</span></div>
+              <div class="rule"><span class="tick">✓</span><span>PayPal or bank transfer only — no crypto, no gift-card-only routes.</span></div>
+              <div class="rule"><span class="tick">✓</span><span>Identity check once lifetime earnings pass $600 (tax reporting).</span></div>
+            </div>
+            <p class="tiny muted" style="margin-top:14px">Public totals: <a href="payouts.html" style="color:var(--mint)">see the payout ledger →</a></p>
+          </div>
+        </div>
+
+        <div class="section-title"><h2>Cash-out history</h2></div>
+        <div class="card"><div class="ledger" id="withdrawList"></div></div>
+      </section>
+
+    </div>
+  </main>
+
+  <nav class="mobile-tabs" aria-label="Mobile navigation">
+    <button class="nav-item" data-panel="dashboard" aria-current="true"><span class="ico" aria-hidden="true">▤</span>Home</button>
+    <button class="nav-item" data-panel="tasks" aria-current="false"><span class="ico" aria-hidden="true">✦</span>Earn</button>
+    <button class="nav-item" data-panel="referrals" aria-current="false"><span class="ico" aria-hidden="true">⇄</span>Invite</button>
+    <button class="nav-item" data-panel="wallet" aria-current="false"><span class="ico" aria-hidden="true">◫</span>Wallet</button>
+  </nav>
+</div>
+
+<div class="modal-backdrop" id="onboard" role="dialog" aria-modal="true" aria-labelledby="onboardTitle">
+  <div class="modal">
+    <div class="eyebrow">Create your profile</div>
+    <h2 id="onboardTitle">Pick a handle</h2>
+    <p class="small muted" style="margin:6px 0 16px">This demo stores everything in your browser — no email, no password, no payment details.</p>
+    <div class="field">
+      <label for="handleInput">Handle</label>
+      <input class="input" id="handleInput" name="handle" placeholder="e.g. mint_fox" autocomplete="off" maxlength="20">
+    </div>
+    <button class="btn btn-primary btn-block" id="handleGo" style="margin-top:16px">Start earning</button>
+    <p class="tiny muted" id="onboardNote" style="margin-top:12px">Prototype notice: rewards shown here are demo points and are not redeemable for money.</p>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
